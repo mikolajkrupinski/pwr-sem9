@@ -1,6 +1,8 @@
-#ifndef COMMON_HPP
-#define COMMON_HPP
+#ifndef COMMON_H
+#define COMMON_H
 
-typedef unsigned long unum_t;
+#include <boost/multiprecision/cpp_int.hpp>
 
-#endif  // COMMON_HPP
+using num_t = boost::multiprecision::cpp_int;
+
+#endif // COMMON_H
