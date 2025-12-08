@@ -5,4 +5,4 @@
 
 using num_t = boost::multiprecision::cpp_int;
 
-#endif // COMMON_H
+#endif  // COMMON_H
