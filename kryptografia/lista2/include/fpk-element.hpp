@@ -29,6 +29,13 @@ class FpkElement {
     coefficients = _coefficients;
   }
 
+  size_t degree() const {
+    if (coefficients.empty()) {
+      return 0;
+    }
+    return coefficients.size() - 1;
+  }
+
   FpkElement operator+(const FpkElement& fe) const;
   FpkElement operator-() const;
   FpkElement operator-(const FpkElement& fe) const;
