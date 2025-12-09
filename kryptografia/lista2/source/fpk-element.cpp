@@ -34,6 +34,10 @@ FpkElement FpkElement::operator*(const FpkElement& fe) const {
   std::vector<FpElement> product_coeffs =
       PolynomialArithmetic::multiply(this->coefficients, fe.coefficients);
 
+  if (FpkElement(product_coeffs).degree() < Field::getPoly().size()) {
+    return FpkElement(product_coeffs);
+  }
+
   std::vector<FpElement> quotient_coeffs;
   std::vector<FpElement> remainder_coeffs;
   PolynomialArithmetic::divide(

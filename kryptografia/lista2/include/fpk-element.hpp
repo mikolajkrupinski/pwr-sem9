@@ -21,7 +21,11 @@ class FpkElement {
 
  public:
   FpkElement(const std::vector<FpElement>& _coefficients = {})
-      : coefficients(_coefficients) {}
+      : coefficients(_coefficients) {
+    if (coefficients.empty()) {
+      coefficients.push_back(FpElement(0));
+    }
+  }
 
   const std::vector<FpElement>& getCoefficients() const { return coefficients; }
 
