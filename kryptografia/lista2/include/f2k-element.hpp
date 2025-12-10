@@ -12,6 +12,7 @@ F2kElement inverse(const F2kElement& fe);
 F2kElement power(const F2kElement& fe, const num_t& exp);
 
 std::ostream& operator<<(std::ostream& os, const F2kElement& fe);
+std::istream& operator>>(std::istream& is, F2kElement& fe);
 
 class F2kElement {
  private:
@@ -66,6 +67,7 @@ class F2kElement {
   friend F2kElement power(const F2kElement& fe, const num_t& exp);
 
   friend std::ostream& operator<<(std::ostream& os, const F2kElement& fe);
+  friend std::istream& operator>>(std::istream& is, F2kElement& fe);
 };
 
 #endif  // F2K_ELEMENT_HPP

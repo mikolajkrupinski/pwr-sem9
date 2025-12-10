@@ -77,3 +77,37 @@ ECPoint EllipticCurve::multiply(const ECPoint& P, num_t k) const {
 
   return result;
 }
+
+std::ostream& operator<<(std::ostream& os, const EllipticCurve& ec) {
+  os << "(" << ec.a << ", " << ec.b << ")";
+  return os;
+}
+
+std::istream& operator>>(std::istream& is, EllipticCurve& ec) {
+  std::string temp;
+  is >> temp;
+
+  if (temp.front() != '(' || temp.back() != ')') {
+    throw std::runtime_error("Invalid FpkElement format");
+  }
+  temp = temp.substr(1, temp.size() - 2);
+
+  size_t start = 0;
+  size_t mid = temp.find(',') + 1;
+  size_t end = temp.size() - 1;
+
+  std::string x_str = temp.substr(start, mid - 1);
+  std::istringstream x_stream(x_str);
+  FpkElement x;
+  x_stream >> x;
+
+  std::string y_str = temp.substr(mid, end - mid + 1);
+  std::istringstream y_stream(y_str);
+  FpkElement y;
+  y_stream >> y;
+
+  ec.x = x;
+  ec.y = y;
+
+  return is;
+}

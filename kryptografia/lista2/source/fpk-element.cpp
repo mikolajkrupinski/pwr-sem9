@@ -118,10 +118,34 @@ std::ostream& operator<<(std::ostream& os, const FpkElement& fe) {
   os << "[";
   for (size_t i = 0; i < fe.coefficients.size(); ++i) {
     os << fe.coefficients[i];
-    if (i != fe.coefficients.size() - 1) {
-      os << ", ";
-    }
+    os << ",";
   }
   os << "]";
   return os;
+}
+
+std::istream& operator>>(std::istream& is, FpkElement& fe) {
+  std::string temp;
+  is >> temp;
+
+  if (temp.front() != '[' || temp.back() != ']') {
+    throw std::runtime_error("Invalid FpkElement format");
+  }
+  temp = temp.substr(1, temp.size() - 2);
+
+  std::vector<FpElement> coeffs;
+  size_t start = 0;
+  size_t end = temp.find(',');
+  while (end != std::string::npos) {
+    std::string coeff_str = temp.substr(start, end - start);
+    std::istringstream coeff_stream(coeff_str);
+    FpElement coeff;
+    coeff_stream >> coeff;
+    coeffs.insert(coeffs.begin(), coeff);
+    start = end + 1;
+    end = temp.find(',', start);
+  }
+  fe.coefficients = coeffs;
+
+  return is;
 }
