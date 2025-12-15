@@ -72,7 +72,7 @@ F2kElement F2kElement::operator+(const F2kElement& fe) const {
 F2kElement F2kElement::operator-() const { return *this; }
 
 F2kElement F2kElement::operator-(const F2kElement& fe) const {
-  return *this + fe;
+  return *this + (-fe);
 }
 
 F2kElement F2kElement::operator*(const F2kElement& fe) const {
@@ -167,16 +167,4 @@ F2kElement power(const F2kElement& fe, const num_t& exp) {
   }
 
   return result;
-}
-
-std::ostream& operator<<(std::ostream& os, const F2kElement& fe) {
-  os << encodeNum(fe.bit_string, currentEncoding);
-  return os;
-}
-
-std::istream& operator>>(std::istream& is, F2kElement& fe) {
-  std::string temp;
-  is >> temp;
-  fe.setBitString(decodeNum(temp, currentEncoding));
-  return is;
 }

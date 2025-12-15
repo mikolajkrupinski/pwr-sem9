@@ -12,9 +12,6 @@ class FpElement;
 FpElement inverse(const FpElement& fe);
 FpElement power(const FpElement& fe, num_t exp);
 
-std::ostream& operator<<(std::ostream& os, const FpElement& fe);
-std::istream& operator>>(std::istream& is, FpElement& fe);
-
 class FpElement {
  private:
   num_t value;
@@ -62,8 +59,13 @@ class FpElement {
   friend FpElement inverse(const FpElement& fe);
   friend FpElement power(const FpElement& fe, num_t exp);
 
-  friend std::ostream& operator<<(std::ostream& os, const FpElement& fe);
-  friend std::istream& operator>>(std::istream& is, FpElement& fe);
+  std::string toStr() const { return encodeNum(this->value, currentEncoding); }
+  void fromStr(const std::string& str) {
+    this->value = decodeNum(str, currentEncoding) % Field::getP();
+    if (this->value < 0) {
+      this->value += Field::getP();
+    }
+  }
 };
 
 #endif  // FP_ELEMENT_HPP

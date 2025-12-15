@@ -79,36 +79,28 @@ ECPointF2k EllipticCurveF2k::multiply(const ECPointF2k& P, num_t k) const {
   return result;
 }
 
-std::ostream& operator<<(std::ostream& os, const EllipticCurveF2k& ec) {
-  os << "(" << ec.a << ", " << ec.b << ")";
-  return os;
+void ECPointF2k::fromStr(const std::string& str) {
+  if (str == "INF;INF") {
+    isInfinity = true;
+    return;
+  }
+
+  size_t delimiter_pos = str.find(';');
+
+  std::string x_str = str.substr(0, delimiter_pos);
+  std::string y_str = str.substr(delimiter_pos + 1);
+
+  x.fromStr(x_str);
+  y.fromStr(y_str);
+  isInfinity = false;
 }
 
-std::istream& operator>>(std::istream& is, EllipticCurveF2k& ec) {
-  std::string temp;
-  is >> temp;
+void EllipticCurveF2k::fromStr(const std::string& str) {
+  size_t delimiter_pos = str.find(';');
 
-  if (temp.front() != '(' || temp.back() != ')') {
-    throw std::runtime_error("Invalid FpkElement format");
-  }
-  temp = temp.substr(1, temp.size() - 2);
+  std::string a_str = str.substr(0, delimiter_pos);
+  std::string b_str = str.substr(delimiter_pos + 1);
 
-  size_t start = 0;
-  size_t mid = temp.find(',') + 1;
-  size_t end = temp.size() - 1;
-
-  std::string x_str = temp.substr(start, mid - 1);
-  std::istringstream x_stream(x_str);
-  FpkElement x;
-  x_stream >> x;
-
-  std::string y_str = temp.substr(mid, end - mid + 1);
-  std::istringstream y_stream(y_str);
-  FpkElement y;
-  y_stream >> y;
-
-  ec.x = x;
-  ec.y = y;
-
-  return is;
+  a.fromStr(a_str);
+  b.fromStr(b_str);
 }

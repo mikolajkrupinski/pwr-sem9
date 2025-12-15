@@ -111,15 +111,3 @@ FpElement power(const FpElement& fe, num_t exp) {
   }
   return result;
 }
-
-std::ostream& operator<<(std::ostream& os, const FpElement& fe) {
-  os << encodeNum(fe.value, currentEncoding);
-  return os;
-}
-
-std::istream& operator>>(std::istream& is, FpElement& fe) {
-  std::string temp;
-  is >> temp;
-  fe.setValue(decodeNum(temp, currentEncoding));
-  return is;
-}

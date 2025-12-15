@@ -24,12 +24,15 @@ class ECPoint {
   }
 
   bool operator!=(const ECPoint& other) const { return !(*this == other); }
+
+  std::string toStr() const {
+    if (isInfinity) {
+      return "INF;INF";
+    }
+    return x.toStr() + ";" + y.toStr();
+  }
+  void fromStr(const std::string& str);
 };
-
-class ElipticCurve;
-
-std::ostream& operator<<(std::ostream& os, const ElipticCurve& ec);
-std::istream& operator>>(std::istream& is, ElipticCurve& ec);
 
 class EllipticCurve {
  private:
@@ -46,8 +49,8 @@ class EllipticCurve {
   ECPoint doublePoint(const ECPoint& P) const;
   ECPoint multiply(const ECPoint& P, num_t k) const;
 
-  friend std::ostream& operator<<(std::ostream& os, const ElipticCurve& ec);
-  friend std::istream& operator>>(std::istream& is, ElipticCurve& ec);
+  std::string toStr() const { return a.toStr() + ";" + b.toStr(); }
+  void fromStr(const std::string& str);
 };
 
 #endif  // ELLIPTIC_CURVE_HPP

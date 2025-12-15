@@ -11,9 +11,6 @@ class F2kElement;
 F2kElement inverse(const F2kElement& fe);
 F2kElement power(const F2kElement& fe, const num_t& exp);
 
-std::ostream& operator<<(std::ostream& os, const F2kElement& fe);
-std::istream& operator>>(std::istream& is, F2kElement& fe);
-
 class F2kElement {
  private:
   num_t bit_string;
@@ -66,8 +63,12 @@ class F2kElement {
   friend F2kElement inverse(const F2kElement& fe);
   friend F2kElement power(const F2kElement& fe, const num_t& exp);
 
-  friend std::ostream& operator<<(std::ostream& os, const F2kElement& fe);
-  friend std::istream& operator>>(std::istream& is, F2kElement& fe);
+  std::string toStr() const {
+    return encodeNum(this->bit_string, currentEncoding);
+  }
+  void fromStr(const std::string& str) {
+    this->bit_string = decodeNum(str, currentEncoding);
+  }
 };
 
 #endif  // F2K_ELEMENT_HPP

@@ -24,12 +24,16 @@ class ECPointF2k {
   }
 
   bool operator!=(const ECPointF2k& other) const { return !(*this == other); }
+
+  std::string toStr() const {
+    if (isInfinity) {
+      return "INF;INF";
+    }
+    return x.toStr() + ";" + y.toStr();
+  }
+
+  void fromStr(const std::string& str);
 };
-
-class EllipticCurveF2k;
-
-std::ostream& operator<<(std::ostream& os, const EllipticCurveF2k& ec);
-std::istream& operator>>(std::istream& is, EllipticCurveF2k& ec);
 
 class EllipticCurveF2k {
  private:
@@ -52,8 +56,8 @@ class EllipticCurveF2k {
   ECPointF2k doublePoint(const ECPointF2k& P) const;
   ECPointF2k multiply(const ECPointF2k& P, num_t k) const;
 
-  friend std::ostream& operator<<(std::ostream& os, const EllipticCurveF2k& ec);
-  friend std::istream& operator>>(std::istream& is, EllipticCurveF2k& ec);
+  std::string toStr() const { return a.toStr() + ";" + b.toStr(); }
+  void fromStr(const std::string& str);
 };
 
 #endif  // ELLIPTIC_CURVE_F2K_HPP

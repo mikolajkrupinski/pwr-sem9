@@ -13,9 +13,6 @@ class FpkElement;
 FpkElement inverse(const FpkElement& fe);
 FpkElement power(const FpkElement& fe, num_t exp);
 
-std::ostream& operator<<(std::ostream& os, const FpkElement& fe);
-std::istream& operator>>(std::istream& is, FpkElement& fe);
-
 class FpkElement {
  private:
   std::vector<FpElement> coefficients;
@@ -64,8 +61,8 @@ class FpkElement {
   friend FpkElement inverse(const FpkElement& fe);
   friend FpkElement power(const FpkElement& fe, num_t exp);
 
-  friend std::ostream& operator<<(std::ostream& os, const FpkElement& fe);
-  friend std::istream& operator>>(std::istream& is, FpkElement& fe);
+  std::string toStr() const;
+  void fromStr(const std::string& str);
 };
 
 #endif  // FPK_ELEMENT_HPP
