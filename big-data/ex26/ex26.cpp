@@ -69,6 +69,13 @@ class SwR {
     }
     return this->reservoir.front().value;
   }
+
+  size_t getSampleAge() const {
+    if (this->reservoir.empty()) {
+      throw std::runtime_error("Reservoir is empty");
+    }
+    return this->time - 1 - this->reservoir.front().index;
+  }
 };
 
 int main() {
@@ -77,10 +84,11 @@ int main() {
   for (int i = 1; i <= 20; ++i) {
     sampler.onGet(i);
     try {
-      int sample = sampler.getSample();
-      std::cout << "Insert " << i << ", sample = " << sample << std::endl;
+      size_t age = sampler.getSampleAge();
+      std::cout << age << std::endl;
+      std::cout << sampler.getSample() << std::endl;
     } catch (const std::runtime_error& e) {
-      std::cout << e.what() << std::endl;
+      std::cout << "No sample available" << std::endl;
     }
   }
 
