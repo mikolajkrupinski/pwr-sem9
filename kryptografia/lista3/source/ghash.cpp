@@ -1,3 +1,5 @@
+#include "ghash.hpp"
+
 #include <cmath>
 #include <iomanip>
 #include <iostream>
