@@ -1,37 +1,25 @@
 #include "fp-element.hpp"
 
 FpElement FpElement::operator+(const FpElement& fe) const {
-  if (!this->isCompatible(fe)) {
-    throw std::invalid_argument("Incompatible fields for addition");
-  }
-  return FpElement((this->value + fe.value) % this->p);
+  return FpElement((this->value + fe.value) % Field::getP());
 }
 
 FpElement FpElement::operator-() const {
   if (this->value == 0) {
     return FpElement(0);
   }
-  return FpElement(this->p - this->value);
+  return FpElement(Field::getP() - this->value);
 }
 
 FpElement FpElement::operator-(const FpElement& fe) const {
-  if (!this->isCompatible(fe)) {
-    throw std::invalid_argument("Incompatible fields for subtraction");
-  }
   return *this + (-fe);
 }
 
 FpElement FpElement::operator*(const FpElement& fe) const {
-  if (!this->isCompatible(fe)) {
-    throw std::invalid_argument("Incompatible fields for multiplication");
-  }
-  return FpElement((this->value * fe.value) % this->p);
+  return FpElement((this->value * fe.value) % Field::getP());
 }
 
 FpElement FpElement::operator/(const FpElement& fe) const {
-  if (!this->isCompatible(fe)) {
-    throw std::invalid_argument("Incompatible fields for division");
-  }
   return *this * inverse(fe);
 }
 
@@ -56,41 +44,23 @@ FpElement& FpElement::operator/=(const FpElement& fe) {
 }
 
 FpElement& FpElement::operator=(const FpElement& fe) {
-  if (!this->isCompatible(fe)) {
-    throw std::invalid_argument("Incompatible fields for assignment");
-  }
   this->value = fe.value;
   return *this;
 }
 
 bool FpElement::operator<(const FpElement& fe) const {
-  if (!this->isCompatible(fe)) {
-    throw std::invalid_argument("Incompatible fields for comparison");
-  }
   return this->value < fe.value;
 }
 bool FpElement::operator<=(const FpElement& fe) const {
-  if (!this->isCompatible(fe)) {
-    throw std::invalid_argument("Incompatible fields for comparison");
-  }
   return this->value <= fe.value;
 }
 bool FpElement::operator>(const FpElement& fe) const {
-  if (!this->isCompatible(fe)) {
-    throw std::invalid_argument("Incompatible fields for comparison");
-  }
   return this->value > fe.value;
 }
 bool FpElement::operator>=(const FpElement& fe) const {
-  if (!this->isCompatible(fe)) {
-    throw std::invalid_argument("Incompatible fields for comparison");
-  }
   return this->value >= fe.value;
 }
 bool FpElement::operator==(const FpElement& fe) const {
-  if (!this->isCompatible(fe)) {
-    throw std::invalid_argument("Incompatible fields for comparison");
-  }
   return this->value == fe.value;
 }
 
@@ -99,7 +69,7 @@ FpElement inverse(const FpElement& fe) {
     throw std::invalid_argument("Division by zero");
   }
 
-  num_t r0 = fe.p;
+  num_t r0 = Field::getP();
   num_t r1 = fe.value;
   num_t t0 = 0;
   num_t t1 = 1;
