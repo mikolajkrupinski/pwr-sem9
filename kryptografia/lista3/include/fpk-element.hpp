@@ -86,6 +86,18 @@ class FpkElement {
     }
   }
 
+  // Konstruktor dla liczb całkowitych (np. 0, 1) - naprawia błąd w main.cpp
+  FpkElement(FieldPtr ctx, long long val) : context(ctx) {
+    coefficients = {FpElement(ctx, val)};
+    normalizePoly(coefficients);
+  }
+
+  // Konstruktor dla num_t (dla spójności)
+  FpkElement(FieldPtr ctx, const num_t& val) : context(ctx) {
+    coefficients = {FpElement(ctx, val)};
+    normalizePoly(coefficients);
+  }
+
   const std::vector<FpElement>& getCoefficients() const { return coefficients; }
   FieldPtr getContext() const { return context; }
 
