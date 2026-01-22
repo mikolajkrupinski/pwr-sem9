@@ -8,9 +8,9 @@
 
 class Field {
  private:
-  num_t p;                  // prime modulus
-  std::vector<num_t> poly;  // coefficients of the irreducible polynomial
-  num_t f2kPoly;            // irreducible polynomial for F2^k
+  num_t p;
+  std::vector<num_t> poly;
+  num_t f2kPoly;
 
  public:
   Field(const num_t& prime, const std::vector<num_t>& _poly,
@@ -21,7 +21,6 @@ class Field {
   const std::vector<num_t>& getPoly() const { return poly; }
   num_t getF2kPoly() const { return f2kPoly; }
 
-  // Sprawdzenie czy dwa ciała są matematycznie identyczne
   bool operator==(const Field& other) const {
     return p == other.p && poly == other.poly && f2kPoly == other.f2kPoly;
   }

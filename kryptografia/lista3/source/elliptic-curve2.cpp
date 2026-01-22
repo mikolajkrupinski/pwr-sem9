@@ -14,7 +14,6 @@ ECPointF2k EllipticCurveF2k::doublePoint(const ECPointF2k& P) const {
     return ECPointF2k();
   }
 
-  // W ciele charakterystyki 2 dodawanie to to samo co odejmowanie
   F2kElement lambda = P.x + (P.y / P.x);
 
   F2kElement lambda_sq = lambda * lambda;
@@ -62,7 +61,7 @@ ECPointF2k EllipticCurveF2k::add(const ECPointF2k& P,
 
 ECPointF2k EllipticCurveF2k::multiply(const ECPointF2k& P, num_t k) const {
   ECPointF2k temp = P;
-  ECPointF2k result = ECPointF2k();  // Infinity
+  ECPointF2k result = ECPointF2k();
 
   num_t scalar = k;
 

@@ -1,11 +1,8 @@
 #include "fpk-element.hpp"
 
-// --- IMPLEMENTACJA METOD POMOCNICZYCH (Internal Polynomial Arithmetic) ---
-
 void FpkElement::normalizePoly(std::vector<FpElement>& poly) {
   if (poly.empty()) return;
 
-  // Pobieramy zero z kontekstu ostatniego elementu
   FpElement zero(poly.back().getContext(), 0);
 
   while (poly.size() > 1 && poly.back() == zero) {
@@ -36,11 +33,8 @@ std::vector<FpElement> FpkElement::polyMultiply(
     return {FpElement(a.empty() ? nullptr : a[0].getContext(), 0)};
   }
 
-  // Używamy size() jako liczby współczynników
   size_t size_a = a.size();
   size_t size_b = b.size();
-  // Stopień wynikowy = (size_a - 1) + (size_b - 1)
-  // Rozmiar wynikowy = Stopień + 1 = size_a + size_b - 1
   size_t result_size = size_a + size_b - 1;
 
   std::vector<FpElement> result(result_size, FpElement(a[0].getContext(), 0));
@@ -62,7 +56,6 @@ void FpkElement::polyDivide(std::vector<FpElement> dividend,
     throw std::runtime_error("Empty polynomial in division");
   FieldPtr ctx = dividend[0].getContext();
 
-  // 1. Kopia dzielnika i normalizacja
   std::vector<FpElement> div_copy = divisor;
   normalizePoly(div_copy);
 
@@ -70,51 +63,36 @@ void FpkElement::polyDivide(std::vector<FpElement> dividend,
     throw std::runtime_error("Division by zero polynomial");
   }
 
-  // 2. Normalizacja dzielnej
   normalizePoly(dividend);
 
-  // Stopnie wielomianów
   int deg_divisor = (int)div_copy.size() - 1;
   int deg_dividend = (int)dividend.size() - 1;
 
-  // 3. Jeśli stopień dzielnej jest mniejszy, wynik to 0, reszta to dzielna
   if (deg_dividend < deg_divisor) {
     quotient = {FpElement(ctx, 0)};
     remainder = dividend;
     return;
   }
 
-  // Inicjalizacja ilorazu zerami. Rozmiar to różnica stopni + 1.
   quotient.assign(deg_dividend - deg_divisor + 1, FpElement(ctx, 0));
 
-  // Odwrotność wiodącego współczynnika dzielnika (potrzebna do skalowania)
   const FpElement& lc_divisor = div_copy.back();
   FpElement lc_divisor_inv = inverse(lc_divisor);
   FpElement zero(ctx, 0);
 
-  // 4. Główna pętla dzielenia (algorytm Dzielenia Wielomianów)
-  // Używamy while, bo stopień dividend może spaść o więcej niż 1 w jednym kroku
   while (deg_dividend >= deg_divisor && !isZeroPoly(dividend)) {
     const FpElement& lc_dividend = dividend.back();
 
-    // Obliczamy współczynnik dla aktualnej potęgi ilorazu
-    // q(x) = LC(dividend) / LC(divisor)
     FpElement factor = lc_dividend * lc_divisor_inv;
 
-    // Wykładnik potęgi x, o którą musimy przesunąć dzielnik
     int deg_diff = deg_dividend - deg_divisor;
 
-    // Zapisujemy współczynnik w ilorazie
     quotient[deg_diff] = factor;
 
-    // Odejmujemy (factor * divisor * x^deg_diff) od dividend
-    // Zamiast przesuwać cały wektor, operujemy na indeksach
     for (int i = 0; i <= deg_divisor; ++i) {
-      // dividend[i + deg_diff] -= factor * divisor[i]
       dividend[i + deg_diff] -= factor * div_copy[i];
     }
 
-    // Ważne: Usuwamy wiodące zera, aby zaktualizować stopień wielomianu
     normalizePoly(dividend);
     deg_dividend = (int)dividend.size() - 1;
   }
@@ -148,7 +126,7 @@ std::vector<FpElement> FpkElement::polyScalarMultiply(
   for (FpElement& coeff : result) {
     coeff = coeff * scalar;
   }
-  normalizePoly(result);  // Na wypadek gdyby skalar był 0, choć jest if wyżej
+  normalizePoly(result);
   return result;
 }
 
@@ -162,8 +140,6 @@ void FpkElement::polyExtendedEuclidean(std::vector<FpElement> a,
   std::vector<FpElement> r1 = b;
   std::vector<FpElement> s0 = {FpElement(ctx, 1)};
   std::vector<FpElement> s1 = {FpElement(ctx, 0)};
-  // t0 i t1 zazwyczaj nie są potrzebne do obliczenia samego s (odwrotności),
-  // ale w pełnym EEA by były. Tutaj skupiamy się na s.
 
   std::vector<FpElement> q;
 
@@ -191,12 +167,9 @@ void FpkElement::polyExtendedEuclidean(std::vector<FpElement> a,
 
   FpElement gcd_inv = inverse(gcd_constant);
 
-  // Normalizacja wyniku tak, aby GCD było 1 (moniczne)
   s = polyScalarMultiply(s0, gcd_inv);
   t = {};
 }
-
-// --- IMPLEMENTACJA OPERATORÓW FPK ---
 
 FpkElement FpkElement::operator+(const FpkElement& fe) const {
   checkContext(fe);
@@ -232,21 +205,16 @@ FpkElement FpkElement::operator-(const FpkElement& fe) const {
 FpkElement FpkElement::operator*(const FpkElement& fe) const {
   checkContext(fe);
 
-  // 1. Mnożenie wielomianów (wynik może mieć stopień >= stopnia ciała)
   std::vector<FpElement> product_coeffs =
       polyMultiply(this->coefficients, fe.coefficients);
 
-  // 2. Pobieramy wielomian redukujący Q(x) z kontekstu
   const std::vector<num_t>& poly_nums = context->getPoly();
   std::vector<FpElement> mod_poly = castNumToFpElements(context, poly_nums);
 
-  // 3. Sprawdzamy czy konieczna jest redukcja
-  // Stopień wielomianu modulo to mod_poly.size() - 1.
   if (product_coeffs.size() < mod_poly.size()) {
     return FpkElement(context, product_coeffs);
   }
 
-  // 4. Redukcja (Dzielenie z resztą)
   std::vector<FpElement> quotient_coeffs;
   std::vector<FpElement> remainder_coeffs;
 
@@ -291,8 +259,6 @@ FpkElement& FpkElement::operator=(const FpkElement& fe) {
   return *this;
 }
 
-// --- FUNKCJE FRIEND ---
-
 FpkElement inverse(const FpkElement& fe) {
   if (FpkElement::isZeroPoly(fe.coefficients)) {
     throw std::runtime_error("Division by zero in Fpk");
@@ -300,11 +266,9 @@ FpkElement inverse(const FpkElement& fe) {
 
   std::vector<FpElement> s, t;
 
-  // Pobieramy wielomian redukujący Q(x)
   std::vector<FpElement> mod_poly = FpkElement::castNumToFpElements(
       fe.getContext(), fe.getContext()->getPoly());
 
-  // Szukamy s(x) takiego, że: s(x)*fe(x) + t(x)*mod_poly(x) = 1
   FpkElement::polyExtendedEuclidean(fe.coefficients, mod_poly, s, t);
 
   return FpkElement(fe.getContext(), s);

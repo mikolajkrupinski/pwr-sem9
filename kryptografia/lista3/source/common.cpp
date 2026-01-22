@@ -20,7 +20,7 @@ std::string encodeNum(const num_t& number, Encoding encoding) {
     while (num > 0) {
       uint16_t remainder = static_cast<uint16_t>(num % 16);
       result = static_cast<char>(remainder < 10 ? '0' + remainder
-                                                : 'A' + (remainder - 10)) +
+                                                : 'a' + (remainder - 10)) +
                result;
       num /= 16;
     }
@@ -50,8 +50,8 @@ num_t decodeNum(const std::string& str, Encoding encoding) {
       result = result * 16;
       if (c >= '0' && c <= '9') {
         result += (c - '0');
-      } else if (c >= 'A' && c <= 'F') {
-        result += (c - 'A' + 10);
+      } else if (c >= 'a' && c <= 'f') {
+        result += (c - 'a' + 10);
       }
     }
   } else {  // encoding == Encoding::BASE_64

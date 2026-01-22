@@ -15,14 +15,13 @@ OBJ_DIR = obj
 # Pliki źródłowe
 SRCS = source/main.cpp \
        source/common.cpp \
-       source/field.cpp \
        source/fp-element.cpp \
        source/fpk-element.cpp \
        source/f2k-element.cpp \
        source/elliptic-curve.cpp \
        source/elliptic-curve-fp.cpp \
        source/elliptic-curve2.cpp \
-	   source/ghash.cpp
+	source/ghash.cpp
 
 # Lista plików obiektowych:
 # Zamienia 'source/plik.cpp' na 'obj/source/plik.o'

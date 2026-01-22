@@ -3,8 +3,6 @@
 FpElement FpElement::operator+(const FpElement& fe) const {
   checkContext(fe);
   num_t sum = this->value + fe.value;
-  // Modulo jest wykonywane w konstruktorze lub tutaj ręcznie dla optymalizacji,
-  // ale bezpieczniej zaufać konstruktorowi lub helperom.
   return FpElement(context, sum);
 }
 
@@ -22,8 +20,7 @@ FpElement FpElement::operator-(const FpElement& fe) const {
 
 FpElement FpElement::operator*(const FpElement& fe) const {
   checkContext(fe);
-  return FpElement(context,
-                   this->value * fe.value);  // Konstruktor zrobi modulo
+  return FpElement(context, this->value * fe.value);
 }
 
 FpElement FpElement::operator/(const FpElement& fe) const {
@@ -52,14 +49,8 @@ FpElement& FpElement::operator/=(const FpElement& fe) {
 }
 
 FpElement& FpElement::operator=(const FpElement& fe) {
-  // Przy przypisaniu zazwyczaj chcemy przejąć też kontekst,
-  // jeśli nasz jest pusty, lub sprawdzić zgodność.
   if (this == &fe) return *this;
 
-  // Jeśli obiekt nie miał kontekstu, przejmujemy go.
-  // Jeśli miał, upewniamy się, że jest zgodny (chyba że pozwalamy na zmianę
-  // ciała przy przypisaniu). Tutaj zakładam twardą walidację, chyba że
-  // this->context jest nullem.
   if (this->context && fe.context && *this->context != *fe.context) {
     throw std::invalid_argument(
         "Cannot assign element from a different field context.");
@@ -97,7 +88,7 @@ FpElement inverse(const FpElement& fe) {
     throw std::invalid_argument("Division by zero");
   }
 
-  num_t p = fe.getContext()->getP();  // Pobieramy P z kontekstu elementu
+  num_t p = fe.getContext()->getP();
   num_t r0 = p;
   num_t r1 = fe.value;
   num_t t0 = 0;
@@ -129,7 +120,7 @@ FpElement inverse(const FpElement& fe) {
 
 FpElement power(const FpElement& fe, num_t exp) {
   FpElement base = fe;
-  FpElement result(fe.getContext(), 1);  // Jedynka w tym samym ciele
+  FpElement result(fe.getContext(), 1);
 
   while (exp > 0) {
     if (exp % 2 == 1) {

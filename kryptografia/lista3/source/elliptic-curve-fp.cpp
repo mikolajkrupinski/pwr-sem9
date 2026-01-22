@@ -10,13 +10,8 @@ ECPointFp EllipticCurveFp::add(const ECPointFp& P, const ECPointFp& Q) const {
     return doublePoint(P);
   }
 
-  // Sprawdzamy czy punkty są z tego samego ciała (na podstawie x)
-  // (Zakładamy, że P.x i Q.x mają ten sam context, operator+ w FpElement to
-  // sprawdzi)
-
   if (P.x == Q.x) {
-    // P.x == Q.x ale P != Q (czyli P.y != Q.y), to oznacza P = -Q -> Infinity
-    return ECPointFp();  // Default constructor = Infinity
+    return ECPointFp();
   }
 
   FpElement numerator = Q.y - P.y;
@@ -35,7 +30,6 @@ ECPointFp EllipticCurveFp::doublePoint(const ECPointFp& P) const {
     return P;
   }
 
-  // Musimy utworzyć zero powiązane z ciałem punktu P
   FieldPtr ctx = P.x.getContext();
   FpElement zero(ctx, 0);
 
@@ -46,7 +40,6 @@ ECPointFp EllipticCurveFp::doublePoint(const ECPointFp& P) const {
   FpElement two(ctx, 2);
   FpElement three(ctx, 3);
 
-  // Używamy parametru 'a' krzywej
   FpElement numerator = (three * (P.x * P.x)) + this->a;
   FpElement denominator = two * P.y;
 
@@ -64,7 +57,7 @@ ECPointFp EllipticCurveFp::multiply(const ECPointFp& P, num_t k) const {
   }
 
   ECPointFp temp = P;
-  ECPointFp result = ECPointFp();  // Infinity
+  ECPointFp result = ECPointFp();
 
   num_t scalar = k;
 
@@ -84,9 +77,6 @@ void ECPointFp::fromStr(const std::string& str) {
     isInfinity = true;
     return;
   }
-
-  // Uwaga: x i y muszą być zainicjalizowane kontekstem PRZED wywołaniem
-  // fromStr. W main.cpp musimy o to zadbać tworząc punkt "zerowy" z kontekstem.
 
   size_t delimiter_pos = str.find(';');
   std::string x_str = str.substr(0, delimiter_pos);

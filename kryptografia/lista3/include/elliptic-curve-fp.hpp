@@ -9,13 +9,10 @@ class ECPointFp {
   FpElement y;
   bool isInfinity;
 
-  ECPointFp()
-      : isInfinity(true) {}  // Domyślny konstruktor tworzy punkt w
-                             // nieskończoności (niezależny od ciała)
+  ECPointFp() : isInfinity(true) {}
+
   ECPointFp(const FpElement& _x, const FpElement& _y)
-      : x(_x), y(_y), isInfinity(false) {
-    // Opcjonalnie sprawdź czy x i y mają ten sam context
-  }
+      : x(_x), y(_y), isInfinity(false) {}
 
   bool operator==(const ECPointFp& other) const {
     if (isInfinity && other.isInfinity) {
@@ -36,9 +33,6 @@ class ECPointFp {
     return x.toStr() + ";" + y.toStr();
   }
 
-  // Wymaga, aby obiekt był już zainicjalizowany poprawnym kontekstem (np. przez
-  // konstruktor z zerami) albo metoda fromStr powinna przyjmować Context. Tutaj
-  // zakładamy, że x i y mają już ustawione wskaźniki na Field.
   void fromStr(const std::string& str);
 };
 
@@ -48,9 +42,7 @@ class EllipticCurveFp {
   FpElement b;
 
  public:
-  EllipticCurveFp(const FpElement& _a, const FpElement& _b) : a(_a), b(_b) {
-    // Opcjonalnie: assert(_a.getContext() == _b.getContext())
-  }
+  EllipticCurveFp(const FpElement& _a, const FpElement& _b) : a(_a), b(_b) {}
 
   const FpElement& getA() const { return a; }
   const FpElement& getB() const { return b; }

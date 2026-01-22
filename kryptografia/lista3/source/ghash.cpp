@@ -2,8 +2,6 @@
 
 #include <iostream>
 
-// Tutaj wklejamy ciała funkcji, które usuniemy z main.cpp
-
 num_t bytesToBlock(const std::string& bytes) {
   num_t block = 0;
   for (unsigned char c : bytes) {

@@ -18,9 +18,6 @@ class F2kElement {
   num_t bit_string;
   FieldPtr context;
 
-  // Funkcje statyczne zmieniają się na niestatyczne lub muszą przyjmować
-  // modulus jako argument Zmieniam je na prywatne metody instancji lub
-  // statyczne przyjmujące parametry
   static num_t bitPolynomialMultiply(const num_t& a, const num_t& b);
   static num_t bitPolynomialReduce(num_t product, const num_t& modulus);
   static num_t bitPolynomialDivide(num_t dividend, const num_t& divisor,
@@ -70,7 +67,7 @@ class F2kElement {
   F2kElement& operator=(const F2kElement& fe);
 
   bool operator==(const F2kElement& fe) const {
-    return bit_string == fe.bit_string;  // Zakładamy ten sam kontekst logiczny
+    return bit_string == fe.bit_string;
   }
   bool operator!=(const F2kElement& fe) const {
     return bit_string != fe.bit_string;

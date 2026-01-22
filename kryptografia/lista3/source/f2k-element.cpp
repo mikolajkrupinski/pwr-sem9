@@ -1,18 +1,11 @@
 #include "f2k-element.hpp"
 
-// Metody pomocnicze teraz mogą być statyczne, ale muszą przyjmować parametry,
-// lub korzystamy z tych wewnątrz metod klasy.
-// Tutaj dostosowałem implementację do nowej struktury.
-
 num_t F2kElement::bitPolynomialMultiply(const num_t& a, const num_t& b) {
   if (a == 0 || b == 0) {
     return 0;
   }
 
   num_t result = 0;
-  // Tworzymy tymczasowy obiekt tylko po to, by wywołać degree(),
-  // w wersji zoptymalizowanej degree() powinno być funkcją statyczną/pomocniczą
-  // na num_t. Zakładam, że degree() działa na bit_string.
   size_t deg_b = 0;
   num_t temp_b = b;
   while (temp_b > 0) {
@@ -42,7 +35,6 @@ num_t F2kElement::bitPolynomialDivide(num_t dividend, const num_t& divisor,
 
   num_t one(1);
 
-  // Helper lambda do stopnia wielomianu
   auto get_degree = [](num_t n) -> ssize_t {
     ssize_t d = 0;
     if (n == 0) return 0;
@@ -90,8 +82,7 @@ num_t F2kElement::bitPolynomialReduce(num_t product, const num_t& modulus) {
   size_t deg_mod = get_degree(modulus);
   size_t deg_prod = get_degree(product);
 
-  while (deg_prod >= deg_mod &&
-         product != 0) {  // added product != 0 check safety
+  while (deg_prod >= deg_mod && product != 0) {
     size_t shift = deg_prod - deg_mod;
     product = product ^ (modulus << shift);
     deg_prod = get_degree(product);
@@ -115,7 +106,6 @@ F2kElement F2kElement::operator-(const F2kElement& fe) const {
 F2kElement F2kElement::operator*(const F2kElement& fe) const {
   checkContext(fe);
   num_t product_bits = bitPolynomialMultiply(this->bit_string, fe.bit_string);
-  // Pobieramy f2kPoly z kontekstu!
   num_t result_bits = bitPolynomialReduce(product_bits, context->getF2kPoly());
   return F2kElement(context, result_bits);
 }
@@ -147,7 +137,6 @@ F2kElement& F2kElement::operator/=(const F2kElement& fe) {
 
 F2kElement& F2kElement::operator=(const F2kElement& fe) {
   if (this == &fe) return *this;
-  // Logika przejmowania kontekstu (jak w FpElement)
   if (this->context && fe.context && *this->context != *fe.context) {
     throw std::invalid_argument(
         "Cannot assign F2kElement from different field.");
@@ -164,7 +153,6 @@ F2kElement inverse(const F2kElement& fe) {
   }
 
   num_t a = fe.bit_string;
-  // Pobieramy wielomian z kontekstu
   num_t r0 = fe.getContext()->getF2kPoly();
   num_t r1 = a;
   num_t s0 = 0;
@@ -172,11 +160,6 @@ F2kElement inverse(const F2kElement& fe) {
   num_t quotient;
 
   while (r1 != 0) {
-    // Uwaga: bitPolynomialDivide jest teraz prywatna lub statyczna,
-    // trzeba ją wywołać poprawnie. Jeśli jest prywatna, inverse musi być
-    // friendem (jest). Jeśli zrobiliśmy ją instancyjną, to problem. W mojej
-    // propozycji F2kElement z headerem, te funkcje są static private, więc
-    // friend może je wywołać jako F2kElement::bitPolynomialDivide.
     num_t r_new = F2kElement::bitPolynomialDivide(r0, r1, quotient);
 
     num_t q_times_s1 = F2kElement::bitPolynomialMultiply(quotient, s1);
@@ -215,7 +198,7 @@ F2kElement power(const F2kElement& fe, const num_t& exp) {
       result = result * base;
     }
     base *= base;
-    current_exp /= 2;  // Fixed from /= current_exp which was infinite loop or 1
+    current_exp /= 2;
   }
 
   return result;

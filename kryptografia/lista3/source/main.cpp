@@ -9,7 +9,6 @@
 #include "crypto-utils.hpp"
 #include "diffie-hellman.hpp"
 #include "elliptic-curve-fp.hpp"
-#include "elliptic-curve-fp.hpp"  // Upewnij się, że masz poprawne nagłówki
 #include "elliptic-curve.hpp"
 #include "elliptic-curve2.hpp"
 #include "f2k-element.hpp"
@@ -19,33 +18,21 @@
 #include "ghash.hpp"
 #include "schnorr.hpp"
 
-// --- VALUE EXTRACTORS (NOWOŚĆ - Naprawa błędów kompilacji) ---
-
-// 1. Dla FpElement - używamy getValue()
 inline num_t extractValue(const FpElement& e) { return e.getValue(); }
 
-// 2. Dla F2kElement - używamy getBitString()
 inline num_t extractValue(const F2kElement& e) { return e.getBitString(); }
 
-// 3. Dla FpkElement - to jest wektor, więc DH na Fpk nie zwraca jednej liczby
-//    Zwracamy 0, aby kod się kompilował (API Challenge używa tylko Fp/Modp)
 inline num_t extractValue(const FpkElement& e) { return 0; }
 
-// --- HELPER FUNCTIONS FOR INPUT/OUTPUT ---
-
-// Funkcja dodająca wiodące zera (Padding)
 std::string toPaddedHex(const num_t& val, const num_t& reference_val) {
   if (reference_val == 0) return encodeNum(val, Encoding::BASE_16);
 
-  // 1. Obliczamy ile bajtów ma liczba odniesienia (np. Modulus p)
   size_t bits = msb(reference_val) + 1;
   size_t bytes = (bits + 7) / 8;
   size_t expected_hex_len = bytes * 2;
 
-  // 2. Konwertujemy wartość na hex
   std::string raw = encodeNum(val, Encoding::BASE_16);
 
-  // 3. Dodajemy zera wiodące jeśli brakuje
   if (raw.length() < expected_hex_len) {
     return std::string(expected_hex_len - raw.length(), '0') + raw;
   }
@@ -91,8 +78,6 @@ std::shared_ptr<Field> createFieldInteractive(int choice) {
   return std::make_shared<Field>(p, poly, f2kPoly);
 }
 
-// --- INTERACTIVE MODULES ---
-
 void runGHASH_Interactive() {
   std::cout << "\n=== GHASH ADVERSARY TOOL ===\n";
   std::cout << "Select Encoding [0=DEC, 1=HEX, 2=B64]: ";
@@ -128,11 +113,8 @@ void runGHASH_Interactive() {
 
   F2kElement tag = calculateGHASH(H, A, C);
 
-  // GHASH zawsze ma 128 bitów (16 bajtów -> 32 hex)
-  // Tworzymy sztuczną liczbę odniesienia o długości 128 bitów do paddingu
   num_t ref128 = (num_t(1) << 128) - 1;
 
-  // POPRAWKA: Używamy getBitString() dla F2kElement zamiast getValue()
   std::cout << ">>> Calculated TAG: " << toPaddedHex(tag.getBitString(), ref128)
             << std::endl;
 }
@@ -154,16 +136,12 @@ void runDH_Interactive_Field(FieldPtr ctx, const std::string& name) {
       "Enter your Secret Key (integer) OR type '0' to generate random: ");
 
   if (sk == 0) {
-    sk = generatePrivateKey(q);
+    sk = generateSecureRandom(1, q);
     std::cout << "-> Generated Random Secret Key: " << sk << std::endl;
   }
 
   ElementT myPK = power(g, sk);
 
-  // POPRAWKA: Używamy extractValue(myPK) zamiast myPK.getValue()
-  // Uwaga: dla F2k padding względem ctx->getP() (czyli 2) da 1 bajt, co jest OK
-  // dla kompilacji, ale dla logiki F2k wymagałoby zmiany. Dla Fp (API
-  // Challenge) działa idealnie.
   std::string myPK_hex = toPaddedHex(extractValue(myPK), ctx->getP());
 
   std::cout << "-> Your Public Key (PADDED - COPY TO JSON & MESSAGE): "
@@ -180,7 +158,6 @@ void runDH_Interactive_Field(FieldPtr ctx, const std::string& name) {
 
   ElementT ss = dh.agree(sk, peerPK);
 
-  // POPRAWKA: Używamy extractValue(ss)
   std::string ss_hex = toPaddedHex(extractValue(ss), ctx->getP());
   std::cout << ">>> SHARED SECRET (PADDED - COPY TO JSON): " << std::endl;
   std::cout << ss_hex << std::endl;
@@ -213,7 +190,7 @@ void runDH_Interactive_Curve(FieldPtr ctx, const std::string& name) {
   num_t sk = promptNum(
       "Enter your Secret Key (integer) OR type '0' to generate random: ");
   if (sk == 0) {
-    sk = generatePrivateKey(q);
+    sk = generateSecureRandom(1, q);
     std::cout << "-> Generated Random Secret Key: " << sk << std::endl;
   }
 

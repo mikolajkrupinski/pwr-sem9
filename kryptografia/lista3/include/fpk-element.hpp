@@ -21,9 +21,6 @@ class FpkElement {
   std::vector<FpElement> coefficients;
   FieldPtr context;
 
-  // --- Metody pomocnicze do arytmetyki wielomianów (Internal Polynomial
-  // Arithmetic) ---
-
   void checkContext(const FpkElement& other) const {
     if (context != other.context && *context != *other.context) {
       throw std::invalid_argument(
@@ -31,37 +28,29 @@ class FpkElement {
     }
   }
 
-  // Usuwa wiodące zera
   static void normalizePoly(std::vector<FpElement>& poly);
 
-  // Sprawdza czy wielomian jest zerowy
   static bool isZeroPoly(const std::vector<FpElement>& poly);
 
-  // Mnożenie dwóch wielomianów (bez redukcji modulo)
   static std::vector<FpElement> polyMultiply(const std::vector<FpElement>& a,
                                              const std::vector<FpElement>& b);
 
-  // Dzielenie wielomianów z resztą: dividend = divisor * quotient + remainder
   static void polyDivide(std::vector<FpElement> dividend,
                          const std::vector<FpElement>& divisor,
                          std::vector<FpElement>& quotient,
                          std::vector<FpElement>& remainder);
 
-  // Rozszerzony algorytm Euklidesa dla wielomianów: a*s + b*t = gcd(a,b)
   static void polyExtendedEuclidean(std::vector<FpElement> a,
                                     std::vector<FpElement> b,
                                     std::vector<FpElement>& s,
                                     std::vector<FpElement>& t);
 
-  // Helper: odejmowanie surowych wielomianów
   static std::vector<FpElement> polySubtract(const std::vector<FpElement>& a,
                                              const std::vector<FpElement>& b);
 
-  // Helper: mnożenie wielomianu przez skalar
   static std::vector<FpElement> polyScalarMultiply(
       const std::vector<FpElement>& poly, const FpElement& scalar);
 
-  // Helper: konwersja num_t coeffs na FpElement coeffs
   static std::vector<FpElement> castNumToFpElements(
       FieldPtr ctx, const std::vector<num_t>& vec);
 
@@ -73,11 +62,9 @@ class FpkElement {
     if (coefficients.empty()) {
       coefficients.push_back(FpElement(ctx, 0));
     } else {
-      normalizePoly(coefficients);  // Upewniamy się, że postać jest
-                                    // znormalizowana przy tworzeniu
+      normalizePoly(coefficients);
     }
 
-    // Walidacja kontekstu
     for (const auto& c : coefficients) {
       if (c.getContext() != ctx && *c.getContext() != *ctx) {
         throw std::invalid_argument(
@@ -86,13 +73,11 @@ class FpkElement {
     }
   }
 
-  // Konstruktor dla liczb całkowitych (np. 0, 1) - naprawia błąd w main.cpp
   FpkElement(FieldPtr ctx, long long val) : context(ctx) {
     coefficients = {FpElement(ctx, val)};
     normalizePoly(coefficients);
   }
 
-  // Konstruktor dla num_t (dla spójności)
   FpkElement(FieldPtr ctx, const num_t& val) : context(ctx) {
     coefficients = {FpElement(ctx, val)};
     normalizePoly(coefficients);
@@ -124,7 +109,6 @@ class FpkElement {
   FpkElement& operator=(const FpkElement& fe);
 
   bool operator==(const FpkElement& fe) const {
-    // Zakładamy, że wektory są zawsze znormalizowane
     return coefficients == fe.coefficients;
   }
 

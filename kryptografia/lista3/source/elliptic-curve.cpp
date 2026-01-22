@@ -34,7 +34,6 @@ ECPoint EllipticCurve::doublePoint(const ECPoint& P) const {
 
   FieldPtr ctx = P.x.getContext();
 
-  // Zero w Fpk to wektor z jednym elementem zero w Fp
   FpkElement zero(ctx, {FpElement(ctx, 0)});
 
   if (P.y == zero) {

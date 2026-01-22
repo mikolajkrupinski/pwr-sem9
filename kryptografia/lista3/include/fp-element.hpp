@@ -26,10 +26,6 @@ class FpElement {
   }
 
  public:
-  // Konstruktor domyślny jest niebezpieczny bez kontekstu,
-  // ale czasem potrzebny do vector::resize.
-  // W idealnym świecie unikalibyśmy go, ale tu zostawiam pusty ptr (uwaga przy
-  // użyciu).
   FpElement() : value(0), context(nullptr) {}
 
   FpElement(FieldPtr ctx, const num_t& _value = 0) : context(ctx) {
@@ -40,7 +36,6 @@ class FpElement {
     }
   }
 
-  // Przeciążenie dla typów prostych (int, long long) dla wygody
   FpElement(FieldPtr ctx, long long _value) : context(ctx) {
     if (!ctx) throw std::invalid_argument("Field context cannot be null");
     this->value = num_t(_value) % ctx->getP();
@@ -81,8 +76,6 @@ class FpElement {
 
   std::string toStr() const { return encodeNum(this->value, currentEncoding); }
 
-  // Uwaga: fromStr nie może już magicznie ustawić modulo,
-  // obiekt musi być już zainicjalizowany poprawnym kontekstem!
   void fromStr(const std::string& str) {
     if (!context)
       throw std::runtime_error("Cannot parse into element with null context");
