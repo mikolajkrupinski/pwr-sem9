@@ -454,7 +454,7 @@ int main() {
     std::cout << "\n============================================\n";
     std::cout << "      ALGEBRAIC CRYPTO ADVERSARY TOOL       \n";
     std::cout << "============================================\n";
-    std::cout << "1. GHASH (GCM Authenticator)\n";
+    std::cout << "1. GHASH\n";
     std::cout << "2. Diffie-Hellman Key Exchange\n";
     std::cout << "3. Schnorr Signature Scheme\n";
     std::cout << "4. Side-Channel Timing Analysis\n";

@@ -35,10 +35,9 @@ class SchnorrUtils {
     SHA256(reinterpret_cast<const unsigned char*>(input.c_str()), input.size(),
            hash);
 
-    num_t result = 0;
-    for (int i = 0; i < SHA256_DIGEST_LENGTH; ++i) {
-      result = (result << 8) | hash[i];
-    }
+    num_t result;
+    boost::multiprecision::import_bits(result, hash,
+                                       hash + SHA256_DIGEST_LENGTH);
     return result;
   }
 
