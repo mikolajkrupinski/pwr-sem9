@@ -260,8 +260,7 @@ void runDH_Interactive_Field(FieldPtr ctx, const std::string& name) {
 
   std::string myPK_hex = toPaddedHex(extractValue(myPK), ctx->getP());
 
-  std::cout << "-> Your Public Key (PADDED - COPY TO JSON & MESSAGE): "
-            << std::endl;
+  std::cout << "-> Your Public Key: " << std::endl;
   std::cout << myPK_hex << std::endl;
 
   std::cout << "\n[2] KEY AGREEMENT\n";
@@ -275,7 +274,7 @@ void runDH_Interactive_Field(FieldPtr ctx, const std::string& name) {
   ElementT ss = dh.agree(sk, peerPK);
 
   std::string ss_hex = toPaddedHex(extractValue(ss), ctx->getP());
-  std::cout << ">>> SHARED SECRET (PADDED - COPY TO JSON): " << std::endl;
+  std::cout << ">>> SHARED SECRET: " << std::endl;
   std::cout << ss_hex << std::endl;
 }
 
@@ -347,7 +346,7 @@ void runSchnorr_Interactive_Field(FieldPtr ctx, const std::string& name) {
     num_t sk = promptNum("Enter Secret Key (int): ");
     std::cin.ignore();
 
-    std::cout << "Enter Message (e.g. your padded DH Public Key): ";
+    std::cout << "Enter Message: ";
     std::getline(std::cin, msg);
 
     auto sig = schnorr.sign(msg, sk);
