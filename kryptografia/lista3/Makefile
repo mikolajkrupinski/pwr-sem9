@@ -4,8 +4,10 @@ CXXFLAGS = -std=c++20 -O3 -Wall
 
 # Ścieżki do nagłówków
 BOOST_PATH = /opt/homebrew/opt/boost/include
+OPENSSL_PATH = /opt/homebrew/opt/openssl@3
 INCLUDE_PATH = ./include
-INCLUDES = -I$(BOOST_PATH) -I$(INCLUDE_PATH)
+INCLUDES = -I$(BOOST_PATH) -I$(OPENSSL_PATH)/include -I$(INCLUDE_PATH)
+LINKS = -L$(OPENSSL_PATH)/lib -lssl -lcrypto
 
 # Katalog na pliki obiektowe (.o)
 OBJ_DIR = obj
@@ -35,7 +37,7 @@ all: $(OUTPUT_FILE)
 # Linkowanie
 # Buduje plik wykonywalny z plików .o znajdujących się w folderze obj/
 $(OUTPUT_FILE): $(OBJS)
-	$(CXX) $(CXXFLAGS) $(OBJS) -o $(OUTPUT_FILE)
+	$(CXX) $(CXXFLAGS) $(OBJS) $(LINKS) -o $(OUTPUT_FILE)
 
 # Kompilacja
 # Reguła dla plików w folderze OBJ_DIR.
