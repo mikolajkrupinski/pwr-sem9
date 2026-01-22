@@ -1,3 +1,4 @@
+#include <chrono>
 #include <iomanip>
 #include <iostream>
 #include <memory>
@@ -17,6 +18,7 @@
 #include "fpk-element.hpp"
 #include "ghash.hpp"
 #include "schnorr.hpp"
+#include "secure-ops.hpp"
 
 inline num_t extractValue(const FpElement& e) { return e.getValue(); }
 
@@ -76,6 +78,120 @@ std::shared_ptr<Field> createFieldInteractive(int choice) {
   }
 
   return std::make_shared<Field>(p, poly, f2kPoly);
+}
+
+num_t generateWithHammingWeight(size_t bits, bool heavy) {
+  if (!heavy) {
+    return (num_t(1) << (bits - 1)) | 1;
+  } else {
+    return (num_t(1) << bits) - 1;
+  }
+}
+
+template <typename Func>
+double measureAvgTime(Func f, int iterations) {
+  auto start = std::chrono::high_resolution_clock::now();
+  for (int i = 0; i < iterations; ++i) {
+    f();
+  }
+  auto end = std::chrono::high_resolution_clock::now();
+  std::chrono::duration<double, std::milli> elapsed = end - start;
+  return elapsed.count() / iterations;
+}
+
+template <typename ElementT>
+void runTimingTest_Field(FieldPtr ctx, const std::string& name) {
+  std::cout << "\n--- Side-Channel Analysis: " << name << " ---\n";
+  std::string g_str;
+  std::cout << "Enter Generator g: ";
+  std::cin >> g_str;
+  ElementT g(ctx);
+  g.fromStr(g_str);
+
+  size_t bits = 256;
+  if (name == "Fp" && ctx->getP() > 0) bits = msb(ctx->getP());
+
+  int iterations = 100;
+
+  num_t expLight = generateWithHammingWeight(bits, false);
+  num_t expHeavy = generateWithHammingWeight(bits, true);
+
+  std::cout << "Running benchmarks (" << iterations << " iterations)...\n";
+  std::cout << "Exp Length: " << bits << " bits\n";
+
+  double t_insecure_light =
+      measureAvgTime([&]() { power(g, expLight); }, iterations);
+  double t_insecure_heavy =
+      measureAvgTime([&]() { power(g, expHeavy); }, iterations);
+
+  double t_secure_light =
+      measureAvgTime([&]() { powerSecure(g, expLight); }, iterations);
+  double t_secure_heavy =
+      measureAvgTime([&]() { powerSecure(g, expHeavy); }, iterations);
+
+  std::cout << std::fixed << std::setprecision(4);
+  std::cout << "\n[Classic Power]\n";
+  std::cout << "  Light HW time: " << t_insecure_light << " ms\n";
+  std::cout << "  Heavy HW time: " << t_insecure_heavy << " ms\n";
+  std::cout << "  Diff Factor:   " << (t_insecure_heavy / t_insecure_light)
+            << "x (Leakage!)\n";
+
+  std::cout << "\n[Secure Power (Montgomery)]\n";
+  std::cout << "  Light HW time: " << t_secure_light << " ms\n";
+  std::cout << "  Heavy HW time: " << t_secure_heavy << " ms\n";
+  std::cout << "  Diff Factor:   " << (t_secure_heavy / t_secure_light)
+            << "x (Target: ~1.0)\n";
+}
+
+template <typename CurveT, typename PointT, typename CoordT>
+void runTimingTest_Curve(FieldPtr ctx, const std::string& name) {
+  std::cout << "\n--- Side-Channel Analysis: " << name << " ---\n";
+  std::string a_str, b_str, G_str;
+  std::cout << "Curve a: ";
+  std::cin >> a_str;
+  std::cout << "Curve b: ";
+  std::cin >> b_str;
+  CoordT a(ctx);
+  a.fromStr(a_str);
+  CoordT b(ctx);
+  b.fromStr(b_str);
+  CurveT curve(a, b);
+
+  PointT G(CoordT(ctx, 0), CoordT(ctx, 0));
+  std::cout << "Generator G (x;y): ";
+  std::cin >> G_str;
+  G.fromStr(G_str);
+
+  size_t bits = 256;
+  int iterations = 50;
+
+  num_t scalarLight = generateWithHammingWeight(bits, false);
+  num_t scalarHeavy = generateWithHammingWeight(bits, true);
+
+  std::cout << "Running benchmarks (" << iterations << " iterations)...\n";
+
+  double t_insecure_light =
+      measureAvgTime([&]() { curve.multiply(G, scalarLight); }, iterations);
+  double t_insecure_heavy =
+      measureAvgTime([&]() { curve.multiply(G, scalarHeavy); }, iterations);
+
+  double t_secure_light = measureAvgTime(
+      [&]() { multiplySecure(curve, G, scalarLight); }, iterations);
+  double t_secure_heavy = measureAvgTime(
+      [&]() { multiplySecure(curve, G, scalarHeavy); }, iterations);
+
+  std::cout << std::fixed << std::setprecision(4);
+  std::cout << "\n[Classic Multiply]\n";
+  std::cout << "  Light HW time: " << t_insecure_light << " ms\n";
+  std::cout << "  Heavy HW time: " << t_insecure_heavy << " ms\n";
+  std::cout << "  Diff Factor:   " << (t_insecure_heavy / t_insecure_light)
+            << "x\n";
+
+  std::cout << "\n[Secure Multiply (Montgomery)]\n";
+  std::cout << "  Light HW time: " << t_secure_light << " ms\n";
+  std::cout << "  Heavy HW time: " << t_secure_heavy << " ms\n";
+  std::cout << "  Diff Factor:   " << (t_secure_heavy / t_secure_light)
+            << "x\n";
 }
 
 void runGHASH_Interactive() {
@@ -341,6 +457,7 @@ int main() {
     std::cout << "1. GHASH (GCM Authenticator)\n";
     std::cout << "2. Diffie-Hellman Key Exchange\n";
     std::cout << "3. Schnorr Signature Scheme\n";
+    std::cout << "4. Side-Channel Timing Analysis\n";
     std::cout << "0. Exit\n";
     std::cout << "Select mode: ";
 
@@ -411,6 +528,30 @@ int main() {
         case 6:
           runSchnorr_Interactive_Curve<EllipticCurve, ECPoint, FpkElement>(
               field, "EC-Fpk");
+          break;
+      }
+    } else if (mode == 4) {  // Side-Channel Timing
+      switch (struct_choice) {
+        case 1:
+          runTimingTest_Field<FpElement>(field, "Fp");
+          break;
+        case 2:
+          runTimingTest_Field<F2kElement>(field, "F2k");
+          break;
+        case 3:
+          runTimingTest_Field<FpkElement>(field, "Fpk");
+          break;
+        case 4:
+          runTimingTest_Curve<EllipticCurveFp, ECPointFp, FpElement>(field,
+                                                                     "EC-Fp");
+          break;
+        case 5:
+          runTimingTest_Curve<EllipticCurveF2k, ECPointF2k, F2kElement>(
+              field, "EC-F2k");
+          break;
+        case 6:
+          runTimingTest_Curve<EllipticCurve, ECPoint, FpkElement>(field,
+                                                                  "EC-Fpk");
           break;
       }
     }
